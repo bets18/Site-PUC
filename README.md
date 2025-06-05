@@ -125,7 +125,7 @@ meu-app/
 
 ## 👥 Autores
 
-- Frontend: [Seu Nome]
+- Frontend: Rafa
 - Design: [Nome do Designer]
 
 ## 📄 Licença
