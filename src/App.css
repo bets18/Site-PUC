@@ -1,38 +1,306 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
 }
 
-.App-link {
-  color: #61dafb;
+/* Animação de slide para formulários */
+@keyframes slideRight {
+  from {
+    opacity: 0;
+    transform: translateX(-100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-@keyframes App-logo-spin {
+@keyframes slideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Animação de pulso para botões */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Animação de brilho para ícones */
+@keyframes shine {
+  0% {
+    background-position: -100% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/* Animação de rotação suave */
+@keyframes gentleRotate {
+  from {
+    transform: rotate(-5deg);
+  }
+  to {
+    transform: rotate(5deg);
+  }
+}
+
+/* Classes de animação */
+.slide-enter {
+  animation: slideRight 0.5s ease-out forwards;
+}
+
+.slide-exit {
+  animation: slideLeft 0.5s ease-out forwards;
+}
+
+.pulse-on-hover {
+  transition: transform 0.3s ease;
+}
+
+.pulse-on-hover:hover {
+  transform: scale(1.1);
+}
+
+.rotate-on-hover {
+  transition: transform 0.5s ease;
+}
+
+.rotate-on-hover:hover {
+  transform: rotate(360deg);
+}
+
+.shine-on-hover {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background-size: 200% 100%;
+  transition: all 0.3s ease;
+}
+
+.shine-on-hover:hover {
+  filter: brightness(1.2);
+}
+
+/* Animação de foco para inputs */
+@keyframes focusGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(217, 169, 58, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(217, 169, 58, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(217, 169, 58, 0);
+  }
+}
+
+.input-focus-animation {
+  transition: all 0.3s ease;
+}
+
+.input-focus-animation:focus {
+  transform: translateY(-1px);
+}
+
+/* Animação do background */
+.elegant-bg {
+  background: linear-gradient(135deg, #002347 0%, #001529 100%);
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.elegant-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 100% 0%, rgba(217, 169, 58, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 0% 100%, rgba(217, 169, 58, 0.1) 0%, transparent 50%);
+  opacity: 0.8;
+  z-index: 1;
+  animation: glowPulse 4s ease-in-out infinite alternate;
+}
+
+@keyframes glowPulse {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 0.8;
+  }
+}
+
+/* Animação de transição suave */
+.form-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Animação de shake para erros */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Animação do título com linha dourada */
+.restaurant-title {
+  position: relative;
+}
+
+.restaurant-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background-color: #D9A93A;
+  transform: translateX(-50%);
+  animation: expandLine 1s ease-out forwards;
+  animation-delay: 0.5s;
+}
+
+@keyframes expandLine {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100px;
+  }
+}
+
+/* Animações */
+@keyframes rotate {
   from {
     transform: rotate(0deg);
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Estilos de Componentes */
+.icon-container-primary {
+  background-color: #002347;
+}
+
+.icon-container-secondary {
+  background-color: #D9A93A;
+}
+
+.icon-primary {
+  color: #D9A93A;
+}
+
+.icon-secondary {
+  color: #002347;
+}
+
+.button-primary {
+  background-color: #002347;
+  transition: all 0.3s ease;
+}
+
+.button-primary:hover {
+  background-color: #001529;
+  transform: translateY(-2px);
+}
+
+/* Títulos */
+.main-title {
+  color: #D9A93A;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.form-title {
+  color: #002347;
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+  .main-title {
+    font-size: 2rem;
+  }
+}
+
+/* Customização do Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D9A93A;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #c49430;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
   }
 }

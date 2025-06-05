@@ -1,70 +1,133 @@
-# Getting Started with Create React App
+# PUC Foodie - Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Sistema de autenticação para o restaurante da PUC-Rio.
 
-## Available Scripts
+## 🚀 Tecnologias Utilizadas
 
-In the project directory, you can run:
+- React.js
+- Firebase Authentication
+- TailwindCSS
+- Lucide Icons
 
-### `npm start`
+## 📋 Pré-requisitos
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- Node.js (versão 14 ou superior)
+- npm ou yarn
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🔧 Instalação
 
-### `npm test`
+1. Clone o repositório:
+```bash
+git clone [URL_DO_REPOSITÓRIO]
+cd meu-app
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. Instale as dependências:
+```bash
+npm install
+```
 
-### `npm run build`
+3. Configure o Firebase:
+   - Crie um projeto no [Firebase Console](https://console.firebase.google.com)
+   - Substitua as configurações em `src/firebase.js` com suas credenciais
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+4. Inicie o servidor de desenvolvimento:
+```bash
+npm start
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🏗️ Estrutura do Projeto
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```
+meu-app/
+├── src/
+│   ├── App.js           # Componente principal com formulário de login/registro
+│   ├── App.css          # Estilos principais
+│   ├── firebase.js      # Configuração do Firebase
+│   └── index.js         # Ponto de entrada da aplicação
+├── public/
+│   └── icone.ico        # Ícone da PUC
+└── package.json         # Dependências e scripts
+```
 
-### `npm run eject`
+## 🔒 Funcionalidades de Autenticação
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Registro de Usuário
+- Nome completo
+- Email
+- Telefone
+- Data de nascimento
+- Senha (mínimo 8 caracteres)
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Login
+- Email
+- Senha
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 🔌 Integração com Backend
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Endpoints Necessários
 
-## Learn More
+1. **Registro de Usuário**
+   ```
+   POST /api/auth/register
+   {
+     "fullName": string,
+     "email": string,
+     "phone": string,
+     "birthDate": string,
+     "password": string
+   }
+   ```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+2. **Login**
+   ```
+   POST /api/auth/login
+   {
+     "email": string,
+     "password": string
+   }
+   ```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Respostas Esperadas
 
-### Code Splitting
+- Sucesso: `200 OK` com token JWT
+- Erro de validação: `400 Bad Request`
+- Erro de autenticação: `401 Unauthorized`
+- Erro do servidor: `500 Internal Server Error`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## 🎨 Estilo e Tema
 
-### Analyzing the Bundle Size
+### Cores
+- Azul Principal: `#002347`
+- Dourado: `#D9A93A`
+- Dourado Hover: `#c49430`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### Fontes
+- Títulos: Playfair Display
+- Texto: System default
 
-### Making a Progressive Web App
+## 🔄 Estado do Projeto
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- [x] Interface de usuário
+- [x] Validações de formulário
+- [x] Integração com Firebase
+- [ ] Integração com backend próprio
+- [ ] Testes automatizados
+- [ ] Deploy em produção
 
-### Advanced Configuration
+## 📝 Próximos Passos
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+1. Implementar backend com os endpoints necessários
+2. Adicionar validação de token JWT
+3. Criar sistema de recuperação de senha
+4. Implementar verificação de email
+5. Adicionar testes automatizados
 
-### Deployment
+## 👥 Autores
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- Frontend: [Seu Nome]
+- Design: [Nome do Designer]
 
-### `npm run build` fails to minify
+## 📄 Licença
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Este projeto está sob a licença [TIPO_DE_LICENÇA].
