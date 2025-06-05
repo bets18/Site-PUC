@@ -20,11 +20,109 @@ export default function PUCRestaurantRegister() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const formatPhone = (value) => {
+    // Remove tudo que não é número
+    const numbers = value.replace(/\D/g, '');
+    
+    // Se não houver números, retorna string vazia
+    if (numbers.length === 0) {
+      return '';
+    }
+    
+    // Limita a 11 dígitos
+    const limitedNumbers = numbers.slice(0, 11);
+    
+    // Aplica a máscara
+    if (limitedNumbers.length <= 2) {
+      return limitedNumbers;
+    }
+    if (limitedNumbers.length <= 7) {
+      return `(${limitedNumbers.slice(0, 2)}) ${limitedNumbers.slice(2)}`;
+    }
+    return `(${limitedNumbers.slice(0, 2)}) ${limitedNumbers.slice(2, 7)}-${limitedNumbers.slice(7)}`;
+  };
+
+  const formatDate = (value) => {
+    // Remove tudo que não é número
+    const numbers = value.replace(/\D/g, '');
+    
+    // Limita a 8 dígitos (ddmmaaaa)
+    const limitedNumbers = numbers.slice(0, 8);
+    
+    // Aplica a máscara dd/mm/aaaa
+    if (limitedNumbers.length <= 2) {
+      return limitedNumbers;
+    }
+    if (limitedNumbers.length <= 4) {
+      return `${limitedNumbers.slice(0, 2)}/${limitedNumbers.slice(2)}`;
+    }
+    return `${limitedNumbers.slice(0, 2)}/${limitedNumbers.slice(2, 4)}/${limitedNumbers.slice(4)}`;
+  };
+
+  const validateDate = (dateStr) => {
+    // Remove as barras para pegar apenas os números
+    const numbers = dateStr.replace(/\D/g, '');
+    if (numbers.length !== 8) return false;
+
+    const day = parseInt(numbers.slice(0, 2));
+    const month = parseInt(numbers.slice(2, 4));
+    const year = parseInt(numbers.slice(4, 8));
+
+    // Verifica se o ano está em um intervalo razoável (entre 1900 e o ano atual)
+    const currentYear = new Date().getFullYear();
+    if (year < 1900 || year > currentYear) return false;
+
+    // Verifica se o mês é válido
+    if (month < 1 || month > 12) return false;
+
+    // Array com o número de dias em cada mês
+    const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+    // Ajusta fevereiro para anos bissextos
+    if (month === 2 && ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0)) {
+      daysInMonth[1] = 29;
+    }
+
+    // Verifica se o dia é válido para o mês
+    return day > 0 && day <= daysInMonth[month - 1];
+  };
+
   const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    if (e.target.name === 'phone') {
+      const value = e.target.value;
+      if (value.length < formData.phone.length) {
+        const numbers = value.replace(/\D/g, '');
+        setFormData({
+          ...formData,
+          [e.target.name]: formatPhone(numbers)
+        });
+      } else {
+        setFormData({
+          ...formData,
+          [e.target.name]: formatPhone(value)
+        });
+      }
+    } else if (e.target.name === 'birthDate') {
+      const value = e.target.value;
+      if (value.length < formData.birthDate.length) {
+        const numbers = value.replace(/\D/g, '');
+        setFormData({
+          ...formData,
+          birthDate: formatDate(numbers)
+        });
+      } else {
+        const formattedDate = formatDate(value);
+        setFormData({
+          ...formData,
+          birthDate: formattedDate
+        });
+      }
+    } else {
+      setFormData({
+        ...formData,
+        [e.target.name]: e.target.value
+      });
+    }
     setError('');
   };
 
@@ -46,6 +144,11 @@ export default function PUCRestaurantRegister() {
         }
         if (!formData.fullName || !formData.phone || !formData.birthDate) {
           setError('Por favor, preencha todos os campos');
+          return;
+        }
+        // Validação específica para a data
+        if (!validateDate(formData.birthDate)) {
+          setError('Data de nascimento inválida');
           return;
         }
         // Lógica de registro
@@ -163,7 +266,7 @@ export default function PUCRestaurantRegister() {
                 <>
                   {/* Campo Nome Completo */}
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
                       <User className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
@@ -180,7 +283,7 @@ export default function PUCRestaurantRegister() {
                   <div className="grid grid-cols-2 gap-4">
                     {/* Campo Telefone */}
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
                         <Phone className="h-5 w-5 text-gray-400" />
                       </div>
                       <input
@@ -189,25 +292,24 @@ export default function PUCRestaurantRegister() {
                         placeholder="(21) 99999-9999"
                         value={formData.phone}
                         onChange={handleInputChange}
+                        maxLength={15}
+                        pattern="\([0-9]{2}\) [0-9]{5}-[0-9]{4}"
                         className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
                       />
                     </div>
 
                     {/* Campo Data de Nascimento */}
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
                         <Calendar className="h-5 w-5 text-gray-400" />
                       </div>
                       <input
                         type="text"
                         name="birthDate"
-                        placeholder="mm/dd/yyyy"
-                        onFocus={(e) => e.target.type = 'date'}
-                        onBlur={(e) => {
-                          if (!e.target.value) e.target.type = 'text'
-                        }}
+                        placeholder="dd/mm/aaaa"
                         value={formData.birthDate}
                         onChange={handleInputChange}
+                        maxLength={10}
                         className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
                       />
                     </div>
@@ -217,7 +319,7 @@ export default function PUCRestaurantRegister() {
 
               {/* Campo Email */}
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
                   <Mail className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
@@ -232,7 +334,7 @@ export default function PUCRestaurantRegister() {
 
               {/* Campo Senha */}
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
                   <Lock className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
@@ -246,7 +348,7 @@ export default function PUCRestaurantRegister() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center z-10"
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5 text-gray-400 shine-on-hover" />
@@ -259,7 +361,7 @@ export default function PUCRestaurantRegister() {
               {/* Campo Confirmar Senha - apenas no registro */}
               {!isLogin && (
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
                     <Lock className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
@@ -273,7 +375,7 @@ export default function PUCRestaurantRegister() {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center z-10"
                   >
                     {showConfirmPassword ? (
                       <EyeOff className="h-5 w-5 text-gray-400 shine-on-hover" />
