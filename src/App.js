@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, Calendar, Phone } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Calendar, Phone, Building2, MapPin, FileText, Briefcase } from 'lucide-react';
 import './App.css';
 import { auth } from './firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
@@ -8,6 +8,7 @@ export default function PUCRestaurantRegister() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
+  const [isRestaurantForm, setIsRestaurantForm] = useState(false);
   const [slideDirection, setSlideDirection] = useState('right');
   const [formData, setFormData] = useState({
     fullName: '',
@@ -15,7 +16,17 @@ export default function PUCRestaurantRegister() {
     phone: '',
     birthDate: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    // Campos para restaurante
+    restaurantName: '',
+    responsibleName: '',
+    rg: '',
+    cnpj: '',
+    restaurantPhone: '',
+    address: '',
+    cep: '',
+    businessLicense: '',
+    foodLicense: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -132,28 +143,34 @@ export default function PUCRestaurantRegister() {
     setLoading(true);
 
     try {
-      if (isLogin) {
-        // Lógica de login
-        await signInWithEmailAndPassword(auth, formData.email, formData.password);
-        console.log('Login realizado com sucesso!');
+      if (isRestaurantForm) {
+        // Lógica de cadastro de restaurante
+        // Implemente a lógica para salvar os dados do restaurante no banco de dados
+        console.log('Restaurante cadastrado com sucesso!');
       } else {
-        // Validações para registro
-        if (formData.password !== formData.confirmPassword) {
-          setError('As senhas não coincidem');
-          return;
+        if (isLogin) {
+          // Lógica de login
+          await signInWithEmailAndPassword(auth, formData.email, formData.password);
+          console.log('Login realizado com sucesso!');
+        } else {
+          // Validações para registro
+          if (formData.password !== formData.confirmPassword) {
+            setError('As senhas não coincidem');
+            return;
+          }
+          if (!formData.fullName || !formData.phone || !formData.birthDate) {
+            setError('Por favor, preencha todos os campos');
+            return;
+          }
+          // Validação específica para a data
+          if (!validateDate(formData.birthDate)) {
+            setError('Data de nascimento inválida');
+            return;
+          }
+          // Lógica de registro
+          await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+          console.log('Conta criada com sucesso!');
         }
-        if (!formData.fullName || !formData.phone || !formData.birthDate) {
-          setError('Por favor, preencha todos os campos');
-          return;
-        }
-        // Validação específica para a data
-        if (!validateDate(formData.birthDate)) {
-          setError('Data de nascimento inválida');
-          return;
-        }
-        // Lógica de registro
-        await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-        console.log('Conta criada com sucesso!');
       }
     } catch (error) {
       switch (error.code) {
@@ -173,7 +190,7 @@ export default function PUCRestaurantRegister() {
           setError('Senha incorreta');
           break;
         default:
-          setError('Erro ao ' + (isLogin ? 'fazer login' : 'criar conta') + '. Tente novamente.');
+          setError('Erro ao ' + (isRestaurantForm ? 'cadastrar o restaurante' : (isLogin ? 'fazer login' : 'criar conta')) + '. Tente novamente.');
       }
       console.error('Erro:', error);
     } finally {
@@ -191,8 +208,59 @@ export default function PUCRestaurantRegister() {
       phone: '',
       birthDate: '',
       password: '',
-      confirmPassword: ''
+      confirmPassword: '',
+      restaurantName: '',
+      responsibleName: '',
+      rg: '',
+      cnpj: '',
+      restaurantPhone: '',
+      address: '',
+      cep: '',
+      businessLicense: '',
+      foodLicense: ''
     });
+  };
+
+  const toggleRestaurantForm = () => {
+    setIsRestaurantForm(!isRestaurantForm);
+    setSlideDirection(isRestaurantForm ? 'right' : 'left');
+    setError('');
+    setFormData({
+      ...formData,
+      restaurantName: '',
+      responsibleName: '',
+      rg: '',
+      cnpj: '',
+      restaurantPhone: '',
+      address: '',
+      cep: '',
+      businessLicense: '',
+      foodLicense: ''
+    });
+  };
+
+  const formatCNPJ = (value) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 14) {
+      return numbers.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/g, '$1.$2.$3/$4-$5');
+    }
+    return numbers.slice(0, 14).replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/g, '$1.$2.$3/$4-$5');
+  };
+
+  const formatRG = (value) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 9) {
+      return numbers.replace(/(\d{2})(\d{3})(\d{3})(\d{1})/g, '$1.$2.$3-$4');
+    }
+    return numbers.slice(0, 9).replace(/(\d{2})(\d{3})(\d{3})(\d{1})/g, '$1.$2.$3-$4');
+  };
+
+  const formatCEP = (value) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 8) {
+      return numbers.replace(/(\d{5})(\d{3})/g, '$1-$2');
+    }
+    return numbers.slice(0, 8).replace(/(\d{5})(\d{3})/g, '$1-$2');
   };
 
   return (
@@ -247,9 +315,9 @@ export default function PUCRestaurantRegister() {
         <div className="bg-white rounded-3xl shadow-2xl p-8 lg:p-12 max-w-md mx-auto w-full form-transition">
           <div className={`space-y-6 ${slideDirection === 'right' ? 'slide-enter' : 'slide-exit'}`}>
             <div className="text-center">
-              <h2 className="text-2xl font-semibold mb-2" style={{color: '#002347'}}>{isLogin ? 'Fazer Login' : 'Criar Conta'}</h2>
-              <p className="text-gray-600 text-sm">
-              </p>
+              <h2 className="text-2xl font-semibold mb-2" style={{color: '#002347'}}>
+                {isRestaurantForm ? 'Cadastrar Restaurante' : (isLogin ? 'Fazer Login' : 'Criar Conta')}
+              </h2>
             </div>
 
             {/* Mensagem de erro */}
@@ -261,129 +329,300 @@ export default function PUCRestaurantRegister() {
 
             {/* Formulário */}
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Campos visíveis apenas no registro */}
-              {!isLogin && (
+              {isRestaurantForm ? (
                 <>
-                  {/* Campo Nome Completo */}
+                  {/* Campo Nome do Restaurante */}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
+                      <Building2 className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      name="restaurantName"
+                      placeholder="Nome do Restaurante"
+                      value={formData.restaurantName}
+                      onChange={handleInputChange}
+                      maxLength={100}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
+                      required
+                    />
+                  </div>
+
+                  {/* Campo Nome do Responsável */}
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
                       <User className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
                       type="text"
-                      name="fullName"
-                      placeholder="Nome Completo"
-                      value={formData.fullName}
+                      name="responsibleName"
+                      placeholder="Nome do Responsável Legal"
+                      value={formData.responsibleName}
+                      onChange={handleInputChange}
+                      maxLength={100}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
+                      required
+                    />
+                  </div>
+
+                  {/* Container para RG e CNPJ */}
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Campo RG */}
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
+                        <FileText className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        name="rg"
+                        placeholder="RG"
+                        value={formData.rg}
+                        onChange={(e) => {
+                          const formatted = formatRG(e.target.value);
+                          setFormData({...formData, rg: formatted});
+                        }}
+                        maxLength={12}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
+                        required
+                      />
+                    </div>
+
+                    {/* Campo CNPJ */}
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
+                        <Briefcase className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        name="cnpj"
+                        placeholder="CNPJ"
+                        value={formData.cnpj}
+                        onChange={(e) => {
+                          const formatted = formatCNPJ(e.target.value);
+                          setFormData({...formData, cnpj: formatted});
+                        }}
+                        maxLength={18}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Campo Telefone do Restaurante */}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
+                      <Phone className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="tel"
+                      name="restaurantPhone"
+                      placeholder="Telefone do Restaurante"
+                      value={formData.restaurantPhone}
+                      onChange={handleInputChange}
+                      maxLength={15}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
+                      required
+                    />
+                  </div>
+
+                  {/* Campo CEP */}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
+                      <MapPin className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      name="cep"
+                      placeholder="CEP"
+                      value={formData.cep}
+                      onChange={(e) => {
+                        const formatted = formatCEP(e.target.value);
+                        setFormData({...formData, cep: formatted});
+                      }}
+                      maxLength={9}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
+                      required
+                    />
+                  </div>
+
+                  {/* Campo Endereço */}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
+                      <MapPin className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      name="address"
+                      placeholder="Endereço completo (Rua, Número, Bairro, Cidade, Estado)"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      maxLength={200}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
+                      required
+                    />
+                  </div>
+
+                  {/* Campo Alvará */}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
+                      <FileText className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      name="businessLicense"
+                      placeholder="Número do Alvará"
+                      value={formData.businessLicense}
+                      onChange={handleInputChange}
+                      maxLength={50}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
+                      required
+                    />
+                  </div>
+
+                  {/* Campo Licença Sanitária */}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
+                      <FileText className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      name="foodLicense"
+                      placeholder="Número da Licença Sanitária"
+                      value={formData.foodLicense}
+                      onChange={handleInputChange}
+                      maxLength={50}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
+                      required
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Campos visíveis apenas no registro */}
+                  {!isLogin && (
+                    <>
+                      {/* Campo Nome Completo */}
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
+                          <User className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          type="text"
+                          name="fullName"
+                          placeholder="Nome Completo"
+                          value={formData.fullName}
+                          onChange={handleInputChange}
+                          className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
+                        />
+                      </div>
+
+                      {/* Container para Telefone e Data de Nascimento */}
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Campo Telefone */}
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
+                            <Phone className="h-5 w-5 text-gray-400" />
+                          </div>
+                          <input
+                            type="tel"
+                            name="phone"
+                            placeholder="(21) 99999-9999"
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                            maxLength={15}
+                            pattern="\([0-9]{2}\) [0-9]{5}-[0-9]{4}"
+                            className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
+                          />
+                        </div>
+
+                        {/* Campo Data de Nascimento */}
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
+                            <Calendar className="h-5 w-5 text-gray-400" />
+                          </div>
+                          <input
+                            type="text"
+                            name="birthDate"
+                            placeholder="dd/mm/aaaa"
+                            value={formData.birthDate}
+                            onChange={handleInputChange}
+                            maxLength={10}
+                            className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Campo Email */}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
+                      <Mail className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="Email"
+                      value={formData.email}
                       onChange={handleInputChange}
                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
                     />
                   </div>
 
-                  {/* Container para Telefone e Data de Nascimento */}
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* Campo Telefone */}
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
-                        <Phone className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        type="tel"
-                        name="phone"
-                        placeholder="(21) 99999-9999"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        maxLength={15}
-                        pattern="\([0-9]{2}\) [0-9]{5}-[0-9]{4}"
-                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
-                      />
+                  {/* Campo Senha */}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
+                      <Lock className="h-5 w-5 text-gray-400" />
                     </div>
-
-                    {/* Campo Data de Nascimento */}
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
-                        <Calendar className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        type="text"
-                        name="birthDate"
-                        placeholder="dd/mm/aaaa"
-                        value={formData.birthDate}
-                        onChange={handleInputChange}
-                        maxLength={10}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
-                      />
-                    </div>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      placeholder={isLogin ? "Senha" : "Mínimo 8 caracteres"}
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center z-10"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5 text-gray-400 shine-on-hover" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-gray-400 shine-on-hover" />
+                      )}
+                    </button>
                   </div>
-                </>
-              )}
 
-              {/* Campo Email */}
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
-                />
-              </div>
-
-              {/* Campo Senha */}
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder={isLogin ? "Senha" : "Mínimo 8 caracteres"}
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center z-10"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400 shine-on-hover" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400 shine-on-hover" />
+                  {/* Campo Confirmar Senha - apenas no registro */}
+                  {!isLogin && (
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
+                        <Lock className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        name="confirmPassword"
+                        placeholder="Digite a senha novamente"
+                        value={formData.confirmPassword}
+                        onChange={handleInputChange}
+                        className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center z-10"
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-5 w-5 text-gray-400 shine-on-hover" />
+                        ) : (
+                          <Eye className="h-5 w-5 text-gray-400 shine-on-hover" />
+                        )}
+                      </button>
+                    </div>
                   )}
-                </button>
-              </div>
-
-              {/* Campo Confirmar Senha - apenas no registro */}
-              {!isLogin && (
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-10">
-                    <Lock className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    name="confirmPassword"
-                    placeholder="Digite a senha novamente"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 text-sm focus:outline-none focus:ring-yellow-400 input-focus-animation bg-gray-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center z-10"
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400 shine-on-hover" />
-                    ) : (
-                      <Eye className="h-5 w-5 text-gray-400 shine-on-hover" />
-                    )}
-                  </button>
-                </div>
+                </>
               )}
 
               {/* Botão de Submit */}
@@ -397,28 +636,56 @@ export default function PUCRestaurantRegister() {
                 onMouseEnter={(e) => !loading && (e.target.style.backgroundColor = '#c49430')}
                 onMouseLeave={(e) => !loading && (e.target.style.backgroundColor = '#D9A93A')}
               >
-                {loading ? 'Carregando...' : (isLogin ? 'Entrar' : 'Criar Conta')}
+                {loading ? 'Carregando...' : (isRestaurantForm ? 'Cadastrar Restaurante' : (isLogin ? 'Entrar' : 'Criar Conta'))}
               </button>
             </form>
 
-            {/* Link para alternar entre Login e Registro */}
+            {/* Links de alternância */}
             <div className="text-center">
-              <p className="text-gray-600 text-sm">
-                {isLogin ? 'Não tem uma conta?' : 'Já tem uma conta?'}{' '}
-                <button 
-                  onClick={toggleMode}
-                  className="font-semibold hover:underline shine-on-hover" 
-                  style={{color: '#002347'}}
-                >
-                  {isLogin ? 'Criar Conta' : 'Fazer Login'}
-                </button>
-              </p>
+              {!isRestaurantForm ? (
+                <p className="text-gray-600 text-sm">
+                  {isLogin ? 'Não tem uma conta?' : 'Já tem uma conta?'}{' '}
+                  <button 
+                    onClick={toggleMode}
+                    className="font-semibold hover:underline shine-on-hover" 
+                    style={{color: '#002347'}}
+                  >
+                    {isLogin ? 'Criar Conta' : 'Fazer Login'}
+                  </button>
+                </p>
+              ) : (
+                <p className="text-gray-600 text-sm">
+                  <button 
+                    onClick={toggleRestaurantForm}
+                    className="font-semibold hover:underline shine-on-hover" 
+                    style={{color: '#002347'}}
+                  >
+                    Voltar para Criar Conta
+                  </button>
+                </p>
+              )}
             </div>
+
+            {/* Link para Cadastro de Restaurante - Mostrar apenas quando não estiver no formulário de restaurante */}
+            {!isRestaurantForm && (
+              <div className="text-center mt-4 border-t pt-4">
+                <p className="text-gray-600 text-sm">
+                  Quer cadastrar seu restaurante?{' '}
+                  <button 
+                    onClick={toggleRestaurantForm}
+                    className="font-semibold hover:underline shine-on-hover" 
+                    style={{color: '#002347'}}
+                  >
+                    Registrar Restaurante
+                  </button>
+                </p>
+              </div>
+            )}
 
             {/* Termos e Condições */}
             <div className="text-center">
               <p className="text-xs text-gray-500">
-                Ao {isLogin ? 'entrar' : 'criar sua conta'}, você concorda com nossos{' '}
+                Ao {isRestaurantForm ? 'cadastrar seu restaurante' : (isLogin ? 'entrar' : 'criar sua conta')}, você concorda com nossos{' '}
                 <button 
                   onClick={() => {}} 
                   className="underline shine-on-hover" 
